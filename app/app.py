@@ -10,6 +10,8 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from store import QRangeStore
 import logging
 from datetime import datetime
+from models import SimulationInput
+from werkzeug.exceptions import BadRequest
 
 class Base(DeclarativeBase):
     pass
@@ -55,14 +57,16 @@ def get_data():
 
 @app.post("/simulation")
 def simulate():
-    # Get data from request in this form
-    # init = {
-    #     "Body1": {"x": 0, "y": 0.1, "vx": 0.1, "vy": 0},
-    #     "Body2": {"x": 0, "y": 1, "vx": 1, "vy": 0},
-    # }
+    init = request.get_json()
+    if init is None: 
+        raise BadRequest('Request body must be JSON')
+    try:
+        validated = SimulationInput.model_validate(init)
+    except ValidationError as e: 
+        raise BadRequest(f'Invalid simulation initial data: {e}')
 
-    # Define time and timeStep for each agent
-    init: dict = request.json
+    init = validated.model_dump() 
+
     for key in init.keys():
         init[key]["time"] = 0
         init[key]["timeStep"] = 0.01

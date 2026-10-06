@@ -52,7 +52,7 @@ class Simulator:
                 produced = parse_query(sm["produced"])
                 func = sm["function"]
                 agent.append({"func": func, "consumed": consumed, "produced": produced})
-            self.sim_graph[agentId] = agent
+            self.sim_graph[agentId] = agent #basically like a list of rules (function) and data for that agent
 
     def read(self, t):
         try:
@@ -61,18 +61,18 @@ class Simulator:
             data = []
         return reduce(__or__, data, {}) # combine all data into one dictionary
 
-    def step(self, agentId, universe):
+    def step(self, agentId, universe): #universe is the previous state snapshot from the store 
         """Run an Agent for a single step."""
         state = dict()
         sms = []
-        for sm in self.sim_graph[agentId]:
+        for sm in self.sim_graph[agentId]: #sm (state manager) is one rule/function for an agent
             sms.append((agentId, sm))
         while sms:
             next_sms = []
             for (agentId, sm) in sms:
                 if self.run_sm(agentId, sm, universe, state) is None:
                     next_sms.append((agentId, sm))
-            if len(sms) == len(next_sms):
+            if len(sms) == len(next_sms): #that means that none of the state managers ran
                 raise Exception(f"No progress made while evaluating statemanagers for agent {agentId}. Remaining statemanagers: {[sm["func"].__name__ for (agentId, sm) in sms]}")
             sms = next_sms
         return state
@@ -90,26 +90,26 @@ class Simulator:
         return res
 
     def find(self, agentId, query, universe, newState: dict, prev=False):
-        """Find consumed data to pass to a State Manager."""
+        """Find consumed data to pass to a State Manager. Gets the actual arguments for each consumed query (from the previous state or the current partially-built state)"""
         # NOTE: queries are interpreted at runtime here
         match query["kind"]:
-            case "Base":
+            case "Base": #lookup type (can be from previous universe or the current one)
                 if prev:
                     return universe[agentId][query["content"]]
                 agentState = newState.get(agentId)
                 if agentState is None:
                     return None
                 return agentState.get(query["content"])
-            case "Prev":
+            case "Prev": #looks up in the previous universe
                 return self.find(agentId, query["content"], universe, newState, prev=True)
-            case "Root":
+            case "Root": #needs the whole agent state dictionary (either previous or current)
                 if prev:
                     return universe[agentId]
                 return newState
             case "Agent":
-                # agent always gets the previous state
+                # agent always gets the previous state (needs a complete state)
                 return universe[query["content"]]
-            case "Access":
+            case "Access": #used for <query>.<field>
                 base = self.find(agentId, query["content"]["base"], universe, newState, prev)
                 if base is None:
                     return None

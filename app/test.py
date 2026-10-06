@@ -7,6 +7,8 @@ NOTE: Test the simulator locally. First build the `queries` binary with `cargo b
 from modsim import data
 from simulator import Simulator
 from store import QRangeStore
+import pytest
+
 
 store = QRangeStore()
 sim = Simulator(store, data)
