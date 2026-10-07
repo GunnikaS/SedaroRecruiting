@@ -41,8 +41,9 @@ class Simulator:
     def __init__(self, store: QRangeStore, init: dict):
         # NOTE: Creating a Simulator object does all the simulation "building"
         self.store = store
-        store[-999999999, 0] = init
         self.init = init
+        self.initial_state = init
+        self.initial_time = min(state["time"] for state in init.values())
         self.times = {agentId: state["time"] for agentId, state in init.items()}
         self.sim_graph = {}
         for (agentId, sms) in agents.items():
@@ -55,6 +56,8 @@ class Simulator:
             self.sim_graph[agentId] = agent #basically like a list of rules (function) and data for that agent
 
     def read(self, t):
+        if t <= self.initial_time: 
+            return self.initial_state
         try:
             data = self.store[t]
         except IndexError:
@@ -159,8 +162,8 @@ class Simulator:
         for _ in range(iterations):
             for agentId in self.init:
                 t = self.times[agentId]
-                universe = self.read(t - 0.001)
-                if set(universe) == set(self.init):
-                    newState = self.step(agentId, universe)
+                prev_state = self.read(t - self.time_step)
+                if set(prev_state) == set(self.init):
+                    newState = self.step(agentId, prev_state)
                     self.store[t, newState[agentId]["time"]] = newState
                     self.times[agentId] = newState[agentId]["time"]
