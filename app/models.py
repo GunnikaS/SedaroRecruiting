@@ -13,7 +13,7 @@ class AgentState(BaseModel): #with default values for time and timestep
     velocity: Vector3D
     mass: float
     time: float = 0.0
-    timestep: float = 0.01 
+    timeStep: float = 0.01
 
 class SimulationInput(BaseModel): 
     Body1: AgentState

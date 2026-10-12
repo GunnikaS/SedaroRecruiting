@@ -11,6 +11,7 @@ from store import QRangeStore
 import logging
 from datetime import datetime
 from models import SimulationInput
+from pydantic import ValidationError
 from werkzeug.exceptions import BadRequest
 
 class Base(DeclarativeBase):
@@ -65,11 +66,11 @@ def simulate():
     except ValidationError as e: 
         raise BadRequest(f'Invalid simulation initial data: {e}')
 
-    init = validated.model_dump() 
+    init = validated.model_dump(by_alias=True)
 
     for key in init.keys():
-        init[key]["time"] = 0
-        init[key]["timeStep"] = 0.01
+        init[key]["time"] = 0.0
+        init[key]["timeStep"] = init[key].get("timeStep", 0.01)
 
     # Create store and simulator
     t = datetime.now()

@@ -1,10 +1,10 @@
 # MODELING & SIMULATION
 
 from random import random
-
+from typing import Dict 
 import numpy as np
 
-def propagate_velocity(time_step, position, velocity, other_position, m_other):
+def propagate_velocity(time_step, position, velocity, other_position, m_other) -> Dict[str, float]:
     """Propagate the velocity of the agent from `time` to `time + timeStep`."""
     # Use law of gravitation to update velocity
     r_self = np.array([position['x'], position['y'], position['z']])
@@ -17,7 +17,7 @@ def propagate_velocity(time_step, position, velocity, other_position, m_other):
 
     return {'x': v_self[0], 'y': v_self[1], 'z': v_self[2]}
 
-def propagate_position(time_step, position, velocity):
+def propagate_position(time_step, position, velocity) -> Dict[str, float]:
     """Propagate the position of the agent from `time` to `time + timeStep`."""
     # Apply velocity to position
     r_self = np.array([position['x'], position['y'], position['z']])
