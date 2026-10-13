@@ -45,6 +45,7 @@ class Simulator:
         self.initial_state = init
         self.initial_time = min(state["time"] for state in init.values())
         self.times = {agentId: state["time"] for agentId, state in init.items()}
+        self.timeStep = min(state["timeStep"] for state in init.values()) if init else 0.01
         self.sim_graph = {}
         for (agentId, sms) in agents.items():
             agent = []
@@ -162,7 +163,7 @@ class Simulator:
         for _ in range(iterations):
             for agentId in self.init:
                 t = self.times[agentId]
-                prev_state = self.read(t - self.time_step)
+                prev_state = self.read(t - self.timeStep)
                 if set(prev_state) == set(self.init):
                     newState = self.step(agentId, prev_state)
                     self.store[t, newState[agentId]["time"]] = newState
