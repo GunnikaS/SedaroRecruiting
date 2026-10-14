@@ -7,6 +7,7 @@ import logging
 import time
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 def test_docker_healthy(running_containers: List[Container]) -> None: 
     # Note: running_containers is in conftest and stores the cached list of running Docker containers
